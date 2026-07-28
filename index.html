@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Nativo - CSS Puro</title>
+  <style>
+    body { 
+      background: #080a0f; color: #fff; font-family: monospace; 
+      text-align: center; margin: 0; padding: 40px 20px; 
+    }
+    h2 { color: #00f0ff; letter-spacing: 2px; }
+    p { color: #708096; margin-bottom: 40px; }
+    
+    .scenes-wrapper { 
+      display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; 
+    }
+    
+    .scene {
+      width: 450px; height: 400px;
+      perspective: 1000px; /* A câmera 3D */
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 8px;
+    }
+    
+    .obj-3d {
+      position: relative;
+      transform-style: preserve-3d; /* Mantém os filhos em espaço 3D */
+      animation: autoRotate 10s infinite linear;
+    }
+    
+    @keyframes autoRotate {
+      from { transform: rotateX(-20deg) rotateY(0deg); }
+      to { transform: rotateX(-20deg) rotateY(360deg); }
+    }
+    
+    /* Configuração base para qualquer cubo */
+    .cube { position: absolute; transform-style: preserve-3d; }
+    .face { 
+      position: absolute; left: 50%; top: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+      font-size: 1.5rem; font-weight: bold; color: rgba(0,0,0,0.5);
+    }
+
+    /* MATERIAIS DO CARRO */
+    .c-body { background: rgba(226, 232, 240, 0.95); }
+    .c-glass { background: rgba(10, 20, 30, 0.8); border: 2px solid #333; }
+    .c-stripe {
+      background: linear-gradient(to bottom, 
+        rgba(226,232,240,0.95) 25%, 
+        #0033cc 25%, #0033cc 35%, 
+        rgba(226,232,240,0.95) 35%, rgba(226,232,240,0.95) 45%, 
+        #cc0000 45%, #cc0000 55%, 
+        rgba(226,232,240,0.95) 55%);
+    }
+
+    /* GEOMETRIA DO CHASSIS: L240 x A60 x P120 */
+    .chassis .front, .chassis .back { width: 240px; height: 60px; margin: -30px 0 0 -120px; }
+    .chassis .front { transform: translateZ(60px); }
+    .chassis .back { transform: rotateY(180deg) translateZ(60px); }
+    .chassis .right, .chassis .left { width: 120px; height: 60px; margin: -30px 0 0 -60px; }
+    .chassis .right { transform: rotateY(90deg) translateZ(120px); }
+    .chassis .left { transform: rotateY(-90deg) translateZ(120px); }
+    .chassis .top, .chassis .bottom { width: 240px; height: 120px; margin: -60px 0 0 -120px; }
+    .chassis .top { transform: rotateX(90deg) translateZ(30px); }
+    .chassis .bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+    /* GEOMETRIA DA CABINE: L120 x A50 x P90 */
+    .cabin { transform: translateY(-55px) translateX(-20px); }
+    .cabin .front, .cabin .back { width: 120px; height: 50px; margin: -25px 0 0 -60px; }
+    .cabin .front { transform: translateZ(45px); }
+    .cabin .back { transform: rotateY(180deg) translateZ(45px); }
+    .cabin .right, .cabin .left { width: 90px; height: 50px; margin: -25px 0 0 -45px; }
+    .cabin .right { transform: rotateY(90deg) translateZ(60px); }
+    .cabin .left { transform: rotateY(-90deg) translateZ(60px); }
+    .cabin .top, .cabin .bottom { width: 120px; height: 90px; margin: -45px 0 0 -60px; }
+    .cabin .top { transform: rotateX(90deg) translateZ(25px); }
+    .cabin .bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+    /* GEOMETRIA DAS RODAS (Círculos projetados no espaço 3D) */
+    .wheel {
+      position: absolute; width: 60px; height: 60px;
+      background: #111; border: 6px solid #4a5568; border-radius: 50%;
+      left: 50%; top: 50%; margin: -30px 0 0 -30px;
+      backface-visibility: visible;
+    }
+    .wheel::after { /* Calota central */
+      content: ''; position: absolute; left: 50%; top: 50%;
+      width: 15px; height: 15px; background: #e2e8f0; border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* Coordenadas (X, Y, Z) para encaixar no chassis */
+    .w-fl { transform: translate3d(70px, 30px, 65px); }
+    .w-fr { transform: translate3d(70px, 30px, -65px); }
+    .w-rl { transform: translate3d(-70px, 30px, 65px); }
+    .w-rr { transform: translate3d(-70px, 30px, -65px); }
+
+    /* MATERIAIS DO MOTOR */
+    .m-body { background: #718096; color: #fff; font-size: 1rem; }
+    .m-cyl { 
+      border: 2px solid #1a202c; 
+      background: repeating-linear-gradient(0deg, #4a5568, #4a5568 6px, #2d3748 6px, #2d3748 12px); 
+    }
+
+    /* BLOCO CENTRAL DO MOTOR: L80 x A100 x P80 */
+    .engine-core .front, .engine-core .back { width: 80px; height: 100px; margin: -50px 0 0 -40px; }
+    .engine-core .front { transform: translateZ(40px); }
+    .engine-core .back { transform: rotateY(180deg) translateZ(40px); }
+    .engine-core .right, .engine-core .left { width: 80px; height: 100px; margin: -50px 0 0 -40px; }
+    .engine-core .right { transform: rotateY(90deg) translateZ(40px); }
+    .engine-core .left { transform: rotateY(-90deg) translateZ(40px); }
+    .engine-core .top, .engine-core .bottom { width: 80px; height: 80px; margin: -40px 0 0 -40px; }
+    .engine-core .top { transform: rotateX(90deg) translateZ(50px); }
+    .engine-core .bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+    /* CILINDROS DO BOXER: L40 x A50 x P50 */
+    .cyl-box .front, .cyl-box .back { width: 40px; height: 50px; margin: -25px 0 0 -20px; }
+    .cyl-box .front { transform: translateZ(25px); }
+    .cyl-box .back { transform: rotateY(180deg) translateZ(25px); }
+    .cyl-box .right, .cyl-box .left { width: 50px; height: 50px; margin: -25px 0 0 -25px; }
+    .cyl-box .right { transform: rotateY(90deg) translateZ(20px); }
+    .cyl-box .left { transform: rotateY(-90deg) translateZ(20px); }
+    .cyl-box .top, .cyl-box .bottom { width: 40px; height: 50px; margin: -25px 0 0 -20px; }
+    .cyl-box .top { transform: rotateX(90deg) translateZ(25px); }
+    .cyl-box .bottom { transform: rotateX(-90deg) translateZ(25px); }
+    
+    .cyl-right-pos { transform: translateX(60px); }
+    .cyl-left-pos { transform: translateX(-60px); }
+  </style>
+</head>
+<body>
+  <h2>GEOMETRIA 3D CSS</h2>
+  <p>Renderização de volumes dispensando WebGL ou Canvas.</p>
+
+  <div class="scenes-wrapper">
+    <!-- CENA DO CARRO -->
+    <div class="scene">
+      <div class="obj-3d">
+        <div class="cube chassis">
+          <div class="face front c-body">53</div>
+          <div class="face back c-body">VW</div>
+          <div class="face right c-body"></div>
+          <div class="face left c-body"></div>
+          <div class="face top c-stripe"></div>
+          <div class="face bottom c-body"></div>
+        </div>
+        <div class="cube cabin">
+          <div class="face front c-glass"></div>
+          <div class="face back c-glass"></div>
+          <div class="face right c-glass"></div>
+          <div class="face left c-glass"></div>
+          <div class="face top c-body c-stripe"></div>
+          <div class="face bottom c-body"></div>
+        </div>
+        <div class="wheel w-fl"></div>
+        <div class="wheel w-fr"></div>
+        <div class="wheel w-rl"></div>
+        <div class="wheel w-rr"></div>
+      </div>
+    </div>
+
+    <!-- CENA DA PEÇA (MOTOR) -->
+    <div class="scene">
+      <div class="obj-3d">
+        <div class="cube engine-core">
+          <div class="face front m-body">BOXER</div>
+          <div class="face back m-body">1830cc</div>
+          <div class="face right m-body"></div>
+          <div class="face left m-body"></div>
+          <div class="face top m-body"></div>
+          <div class="face bottom m-body"></div>
+        </div>
+        <div class="cube cyl-box cyl-right-pos">
+          <div class="face front m-cyl"></div>
+          <div class="face back m-cyl"></div>
+          <div class="face right m-cyl"></div>
+          <div class="face left m-cyl"></div>
+          <div class="face top m-cyl"></div>
+          <div class="face bottom m-cyl"></div>
+        </div>
+        <div class="cube cyl-box cyl-left-pos">
+          <div class="face front m-cyl"></div>
+          <div class="face back m-cyl"></div>
+          <div class="face right m-cyl"></div>
+          <div class="face left m-cyl"></div>
+          <div class="face top m-cyl"></div>
+          <div class="face bottom m-cyl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
