@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VW Beetle Herbie // 3D Studio</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+        body {
+            background-color: #05080f;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        h1 { font-size: 1.2rem; color: #00f0ff; margin-bottom: 5px; letter-spacing: 2px; }
+        p { font-size: 0.8rem; color: #64748b; margin-bottom: 20px; }
+        
+        .container {
+            width: 90vw;
+            max-width: 800px;
+            height: 450px;
+            background: #0b101d;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover, button.active {
+            background: #00f0ff;
+            color: #05080f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>VW BEETLE // 3D STUDIO</h1>
+    <p>Clique e arraste para rotacionar o modelo em 360°</p>
+
+    <div class="container">
+        <canvas id="canvas3d"></canvas>
+    </div>
+
+    <div class="controls">
+        <button id="btnCar" class="active" onclick="setModel('car')">Carroceria (Herbie)</button>
+        <button id="btnEngine" onclick="setModel('engine')">Motor Boxer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas3d');
+        const ctx = canvas.getContext('2d');
+
+        let currentModel = 'car';
+        let rotX = 0.4, rotY = 0.8;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Controle de Mouse e Touch para rotação
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            rotY += (e.clientX - startX) * 0.01;
+            rotX += (e.clientY - startY) * 0.01;
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        canvas.addEventListener('touchstart', e => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        window.addEventListener('touchend', () => isDragging = false);
+        window.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            rotY += (e.touches[0].clientX - startX) * 0.01;
+            rotX += (e.touches[0].clientY - startY) * 0.01;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+
+        function setModel(type) {
+            currentModel = type;
+            document.getElementById('btnCar').classList.toggle('active', type === 'car');
+            document.getElementById('btnEngine').classList.toggle('active', type === 'engine');
+        }
+
+        // Projeção 3D para 2D com perspectiva
+        function project(x, y, z) {
+            let cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+            let x1 = x * cosY - z * sinY;
+            let z1 = z * cosY + x * sinY;
+
+            let cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+            let y2 = y * cosX - z1 * sinX;
+            let z2 = z1 * cosX + y * sinX;
+
+            let fov = 350;
+            let scale = fov / (fov + z2 + 250);
+
+            return {
+                x: canvas.width / 2 + x1 * scale,
+                y: canvas.height / 2 + y2 * scale,
+                scale: scale
+            };
+        }
+
+        // Desenhar formas poligonais preenchidas
+        function drawPoly(points, color, stroke = null) {
+            if (points.length === 0) return;
+            let proj = points.map(p => project(p[0], p[1], p[2]));
+            
+            ctx.beginPath();
+            ctx.moveTo(proj[0].x, proj[0].y);
+            for (let i = 1; i < proj.length; i++) {
+                ctx.lineTo(proj[i].x, proj[i].y);
+            }
+            ctx.closePath();
+            
+            ctx.fillStyle = color;
+            ctx.fill();
+            if (stroke) {
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        // Renderização do Carro (Formato Fusca Simplificado de Alta Precisão)
+        fn_car = () => {
+            // Rodas
+            [[-70, 25, 55], [70, 25, 55], [-70, 25, -55], [70, 25, -55]].forEach(w => {
+                let p = project(w[0], w[1], w[2]);
+                let r = 24 * p.scale;
+                if(r > 0) {
+                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+                    ctx.fillStyle = '#111'; ctx.fill(); ctx.strokeStyle = '#555'; ctx.lineWidth=3; ctx.stroke();
+                }
+            });
+
+            // Corpo Inferior
+            drawPoly([[-90,15,-45], [90,15,-45], [90,15,45], [-90,15,45]], '#e2e8f0', '#cbd5e1');
+            drawPoly([[-90,-15,-40], [90,-15,-40], [90,15,-45], [-90,15,-45]], '#f8fafc', '#cbd5e1');
+            drawPoly([[-90,-15,40], [90,-15,40], [90,15,45], [-90,15,45]], '#f8fafc', '#cbd5e1');
+
+            // Cabine / Teto Arredondado
+            drawPoly([[-40,-40,-35], [40,-40,-35], [50,-15,-40], [-50,-15,-40]], '#f1f5f9', '#94a3b8');
+            drawPoly([[-40,-40,35], [40,-40,35], [50,-15,40], [-50,-15,40]], '#f1f5f9', '#94a3b8');
+            drawPoly([[-40,-40,-35], [-40,-40,35], [40,-40,35], [40,-40,-35]], '#ffffff', '#94a3b8'); // Topo teto
+
+            // Listra Herbie Azul Centralizada no Teto
+            drawPoly([[-41,-41,-8], [-41,-41,8], [41,-41,8], [41,-41,-8]], '#0033cc');
+        }
+
+        // Renderização do Motor Boxer
+        fn_engine = () => {
+            // Bloco Central
+            drawPoly([[-30,-30,-30], [30,-30,-30], [30,30,-30], [-30,30,-30]], '#64748b', '#334155');
+            drawPoly([[-30,-30,30], [30,-30,30], [30,30,30], [-30,30,30]], '#64748b', '#334155');
+            drawPoly([[-30,-30,-30], [-30,-30,30], [-30,30,30], [-30,30,-30]], '#475569', '#334155');
+            drawPoly([[30,-30,-30], [30,-30,30], [30,30,30], [30,30,-30]], '#475569', '#334155');
+
+            // Cilindros Laterais Esquerdo e Direito
+            [-60, 60].forEach(ox => {
+                drawPoly([[ox-20,-20,-25], [ox+20,-20,-25], [ox+20,20,-25], [ox-20,20,-25]], '#94a3b8', '#1e293b');
+                drawPoly([[ox-20,-20,25], [ox+20,-20,25], [ox+20,20,25], [ox-20,20,25]], '#94a3b8', '#1e293b');
+                drawPoly([[ox-20,-20,-25], [ox-20,-20,25], [ox-20,20,25], [ox-20,20,-25]], '#475569', '#1e293b');
+            });
+        }
+
+        // Loop principal de animação
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!isDragging) {
+                rotY += 0.008; // Rotação automática suave se o mouse estiver parado
+            }
+
+            if (currentModel === 'car') {
+                fn_car();
+            } else {
+                fn_engine();
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
+
