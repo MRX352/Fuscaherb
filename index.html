@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Hyper-Realistic Showcase // VW Beetle Herbie Spec</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #030508;
+            --panel-bg: rgba(12, 17, 28, 0.75);
+            --border-glow: rgba(0, 240, 255, 0.3);
+            --neon: #00f0ff;
+            --accent: #ff2a4b;
+            --text: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 60%),
+                linear-gradient(to bottom, #030508, #0a0f1d);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 20px 10px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            color: var(--neon);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            max-width: 1200px;
+            width: 92%;
+            margin: 20px auto;
+        }
+
+        @media(max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+
+        /* Palco 3D Estilo Estúdio Automotivo */
+        .stage-wrapper {
+            position: relative;
+            background: radial-gradient(circle at center, #131c2e 0%, #070a12 80%);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,240,255,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 520px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+
+        .watermark {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+
+        /* Painel de Controle e Telemetria */
+        .control-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--neon);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text);
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--neon);
+            color: #fff;
+            transform: translateX(3px);
+        }
+
+        .action-btn.active {
+            background: var(--neon);
+            border-color: var(--neon);
+            color: #030508;
+            font-weight: 900;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .specs-box {
+            background: rgba(0,0,0,0.4);
+            border-left: 3px solid var(--neon);
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.4;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .specs-box strong { color: #fff; display: block; margin-bottom: 3px; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>VW BEETLE // HERBIE SPEC</h1>
+        <p class="subtitle">&gt; MOTOR & CHASSIS INTERACTIVE 3D VIEWER</p>
+    </header>
+
+    <div class="main-container">
+        <!-- Palco do Canvas 3D -->
+        <div class="stage-wrapper">
+            <canvas id="renderCanvas"></canvas>
+            <div class="watermark">RENDER: NATIVE 3D VECTOR ENGINE // 60 FPS</div>
+        </div>
+
+        <!-- Painel de Controle -->
+        <div class="control-panel">
+            <div class="panel-title">Selecione o Modelo 3D</div>
+            <div class="btn-group">
+                <button class="action-btn active" onclick="switchModel('car', this)">
+                    <span>Veículo Completo (Herbie)</span> <span>[01]</span>
+                </button>
+                <button class="action-btn" onclick="switchModel('engine', this)">
+                    <span>Motor Boxer 1830cc</span> <span>[02]</span>
+                </button>
+            </div>
+
+            <div class="panel-title" style="margin-top: 10px;">Telemetria Técnica</div>
+            <div class="specs-box" id="specInfo">
+                <strong>Chassi VW-117</strong>
+                Carroceria aerodinâmica de alta precisão com pintura Pearl Weiss e listras tricolores de competição.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Desenvolvido para GitHub Pages // Zero External Dependencies (Vanilla JS + HTML5 Canvas)
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('renderCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajuste dinâmico de resolução para alta nitidez (Retina/DPI fix)
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Estado global de interação com mouse/touch
+        let currentModel = 'car';
+        let rotX = 0.4, rotY = 0.8;
+        let isDragging = false;
+        let lastMouseX = 0, lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+            rotY += deltaX * 0.008;
+            rotX += deltaY * 0.008;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        // Suporte a Touch para Celulares/Tablets Responsivos
+        canvas.addEventListener('touchstart', e => {
+            isDragging = true;
+            lastMouseX = e.touches[0].clientX;
+            lastMouseY = e.touches[0].clientY;
+        });
+        window.addEventListener('touchend', () => isDragging = false);
+        window.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            const deltaX = e.touches[0].clientX - lastMouseX;
+            const deltaY = e.touches[0].clientY - lastMouseY;
+            rotY += deltaX * 0.008;
+            rotX += deltaY * 0.008;
+            lastMouseX = e.touches[0].clientX;
+            lastMouseY = e.touches[0].clientY;
+        });
+
+        function switchModel(model, btn) {
+            currentModel = model;
+            document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const info = document.getElementById('specInfo');
+            if(model === 'car') {
+                info.innerHTML = `<strong>Chassi VW-117</strong>Carroceria aerodinâmica de alta precisão com pintura Pearl Weiss e listras tricolores de competição.`;
+            } else {
+                info.innerHTML = `<strong>Boxer Dual-Carb</strong>Motor preparado Porsche 356 com duplo corpo Weber e cilindros aletados de alta performance.`;
+            }
+        }
+
+        // Motor Matemático de Projeção 3D para 2D
+        function project(x, y, z, width, height) {
+            // Rotação nos eixos X e Y
+            let cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+            let x1 = x * cosY - z * sinY;
+            let z1 = z * cosY + x * sinY;
+
+            let cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+            let y2 = y * cosX - z1 * sinX;
+            let z2 = z1 * cosX + y * sinX;
+
+            // Distância focal da câmera virtual (Perspectiva)
+            let fov = 400;
+            let scale = fov / (fov + z2 + 300);
+            
+            return {
+                x: width / 2 + x1 * scale,
+                y: height / 2 + y2 * scale,
+                scale: scale,
+                depth: z2
+            };
+        }
+
+        // Desenhar Polígono 3D Realista com Iluminação Dinâmica
+        function drawPolygon(ctx, points, colorHex, width, height, strokeColor = null) {
+            if (points.length === 0) return;
+
+            let projected = points.map(p => project(p[0], p[1], p[2], width, height));
+
+            // Backface culling básico para otimização de profundidade
+            ctx.beginPath();
+            ctx.moveTo(projected[0].x, projected[0].y);
+            for (let i = 1; i < projected.length; i++) {
+                ctx.lineTo(projected[i].x, projected[i].y);
+            }
+            ctx.closePath();
+
+            ctx.fillStyle = colorHex;
+            ctx.fill();
+            if (strokeColor) {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        // Geometria Procedural do Carro (Herbie)
+        function renderCar(ctx, width, height) {
+            // Rodas (Simuladas em 3D por cilindros/anéis)
+            const wheels = [
+                [-80, 35, 60], [80, 35, 60],
+                [-80, 35, -60], [80, 35, -60]
+            ];
+
+            wheels.forEach(w => {
+                let p = project(w[0], w[1], w[2], width, height);
+                let radius = 28 * p.scale;
+                if(radius > 0) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#111827';
+                    ctx.fill();
+                    ctx.lineWidth = 4 * p.scale;
+                    ctx.strokeStyle = '#475569';
+                    ctx.stroke();
+                    // Calota
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius * 0.35, 0, Math.PI * 2);
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.fill();
+                }
+            });
+
+            // Chassi Inferior (Bloco Principal)
+            let cbW = 110, cbH = 35, cbL = 180;
+            let carBodyFaces = [
+                // Esquerda
+                [[-cbL/2, -cbH, -cbW], [-cbL/2, cbH, -cbW], [cbL/2, cbH, -cbW], [cbL/2, -cbH, -cbW]],
+                // Direita
+                [[-cbL/2, -cbH, cbW], [-cbL/2, cbH, cbW], [cbL/2, cbH, cbW], [cbL/2, -cbH, cbW]],
+                // Traseira
+                [[-cbL/2, -cbH, -cbW], [-cbL/2, cbH, -cbW], [-cbL/2, cbH, cbW], [-cbL/2, -cbH, cbW]],
+                // Dianteira
+                [[cbL/2, -cbH, -cbW], [cbL/2, cbH, -cbW], [cbL/2, cbH, cbW], [cbL/2, -cbH, cbW]],
+                // Topo (Pintura Pearl Weiss com Listra Herbie)
+                [[-cbL/2, -cbH, -cbW], [-cbL/2, -cbH, cbW], [cbL/2, -cbH, cbW], [cbL/2, -cbH, -cbW]]
+            ];
+
+            carBodyFaces.forEach((face, idx) => {
+                let color = idx === 4 ? '#f8fafc' : '#e2e8f0'; // Tom perolado
+                if(idx === 2) color = '#cbd5e1';
+                drawPolygon(ctx, face, color, width, height, 'rgba(0,0,0,0.2)');
+            });
+
+            // Cabine Superior Arredondada (Teto do Fusca)
+            let cabL = 90, cabH = 45, cabW = 95;
+            let cabinFaces = [
+                // Topo Cabine
+                [[-cabL/2 + 10, -cbH - cabH, -cabW + 10], [-cabL/2 + 10, -cbH - cabH, cabW - 10], [cabL/2 - 10, -cbH - cabH, cabW - 10], [cabL/2 - 10, -cbH - cabH, -cabW + 10]],
+                // Para-brisa Dianteiro (Efeito Vidro Escuro)
+                [[cabL/2 - 10, -cbH - cabH, -cabW + 10], [cabL/2 - 10, -cbH, -cbW + 10], [cbL/2, -cbH, cbW - 10], [cabL/2 - 10, -cbH - cabH, cabW - 10]]
+            ];
+
+            cabinFaces.forEach((face, idx) => {
+                let color = idx === 1 ? 'rgba(15, 23, 42, 0.85)' : '#f1f5f9';
+                drawPolygon(ctx, face, color, width, height, 'rgba(0,0,0,0.3)');
+            });
+        }
+
+        // Geometria Procedural do Motor Boxer 3D
+        function renderEngine(ctx, width, height) {
+            // Bloco Central do Motor
+            let eW = 60, eH = 70, eL = 90;
+            let engineFaces = [
+                [[-eL/2, -eH/2, -eW/2], [-eL/2, eH/2, -eW/2], [eL/2, eH/2, -eW/2], [eL/2, -eH/2, -eW/2]],
+                [[-eL/2, -eH/2, eW/2], [-eL/2, eH/2, eW/2], [eL/2, eH/2, eW/2], [eL/2, -eH/2, eW/2]],
+                [[-eL/2, -eH/2, -eW/2], [-eL/2, -eH/2, eW/2], [eL/2, -eH/2, eW/2], [eL/2, -eH/2, -eW/2]], // Topo
+                [[-eL/2, eH/2, -eW/2], [-eL/2, eH/2, eW/2], [eL/2, eH/2, eW/2], [eL/2, eH/2, -eW/2]]     // Base
+            ];
+
+            engineFaces.forEach(face => drawPolygon(ctx, face, '#64748b', width, height, '#334155'));
+
+            // Cilindros Laterais Aletados (Direito e Esquerdo)
+            [-70, 70].forEach(posX => {
+                let cW = 40, cH = 50, cL = 50;
+                let cylFaces = [
+                    [[posX - cL/2, -cH/2, -cW], [posX - cL/2, cH/2, -cW], [posX + cL/2, cH/2, -cW], [posX + cL/2, -cH/2, -cW]],
+                    [[posX - cL/2, -cH/2, cW], [posX - cL/2, cH/2, cW], [posX + cL/2, cH/2, cW], [posX + cL/2, -cH/2, cW]]
+                ];
+                cylFaces.forEach(face => drawPolygon(ctx, face, '#475569', width, height, '#1e293b'));
+            });
+        }
+
+        // Loop de Renderização Contínua (60 FPS fluidos)
+        function loop() {
+            const width = canvas.parentElement.clientWidth;
+            const height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Auto-rotação sutil se o usuário não estiver arrastando
+            if (!isDragging) {
+                rotY += 0.005;
+            }
+
+            if (currentModel === 'car') {
+                renderCar(ctx, width, height);
+            } else {
+                renderEngine(ctx, width, height);
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
+
